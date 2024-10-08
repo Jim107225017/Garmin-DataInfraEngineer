@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  redis-node-1:
+    image: redis:latest
+    command: ["redis-server", "--port", "6379", "--cluster-enabled", "yes", "--cluster-config-file", "/data/nodes.conf", "--cluster-node-timeout", "5000", "--appendonly", "yes"]
+    ports:
+      - "12001:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-h", "localhost", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - redis-network
+
+  redis-node-2:
+    image: redis:latest
+    command: ["redis-server", "--port", "6380", "--cluster-enabled", "yes", "--cluster-config-file", "/data/nodes.conf", "--cluster-node-timeout", "5000", "--appendonly", "yes"]
+    ports:
+      - "12002:6380"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-h", "localhost", "-p", "6380", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - redis-network
+
+  redis-node-3:
+    image: redis:latest
+    command: ["redis-server", "--port", "6381", "--cluster-enabled", "yes", "--cluster-config-file", "/data/nodes.conf", "--cluster-node-timeout", "5000", "--appendonly", "yes"]
+    ports:
+      - "12003:6381"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-h", "localhost", "-p", "6381", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - redis-network
+
+  redis-cluster-setup:
+    image: redis:latest
+    depends_on:
+      redis-node-1:
+        condition: service_healthy
+      redis-node-2:
+        condition: service_healthy
+      redis-node-3:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c", "echo 'yes' | redis-cli --cluster create redis-node-1:6379 redis-node-2:6380 redis-node-3:6381 --cluster-replicas 0"]
+    networks:
+      - redis-network
+
+networks:
+  redis-network:
+    driver: bridge
