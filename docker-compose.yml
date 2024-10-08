@@ -52,7 +52,14 @@ services:
     entrypoint: ["/bin/sh", "-c", "echo 'yes' | redis-cli --cluster create redis-node-1:6379 redis-node-2:6380 redis-node-3:6381 --cluster-replicas 0"]
     networks:
       - redis-network
-
+  
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    environment:
+      - REDIS_ADDR=redis-node-1:6379
+    networks:
+      - redis-network
+      
 networks:
   redis-network:
     driver: bridge
