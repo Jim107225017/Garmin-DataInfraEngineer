@@ -12,6 +12,8 @@ services:
       timeout: 5s
       retries: 3
     restart: always
+    volumes:
+      - redis-data-1:/data
     networks:
       - redis-network
 
@@ -26,6 +28,8 @@ services:
       timeout: 5s
       retries: 3
     restart: always
+    volumes:
+      - redis-data-2:/data
     networks:
       - redis-network
 
@@ -40,6 +44,8 @@ services:
       timeout: 5s
       retries: 3
     restart: always
+    volumes:
+      - redis-data-3:/data
     networks:
       - redis-network
 
@@ -72,6 +78,11 @@ services:
     networks:
       - redis-network
   
+volumes:
+  redis-data-1:
+  redis-data-2:
+  redis-data-3:
+
 networks:
   redis-network:
     driver: bridge
